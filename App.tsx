@@ -12,6 +12,7 @@ import {
   Switch,
   PermissionsAndroid,
   Platform,
+  TextInput,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Store} from './src/types/types';
@@ -64,11 +65,16 @@ const App = () => {
     lat: 36.6834695,
     lng: -4.4706081,
   });
+  const [searchText, setSearchText] = useState('');
+  const [filteredStores, setFilteredStores] = useState<Store[]>([]);
 
   const mapRef = useRef<any>(null);
 
   useEffect(() => {
-    fetchStores().then(setStores);
+    fetchStores().then(data => {
+      setStores(data);
+      setFilteredStores(data);
+    });
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 1000,
@@ -113,6 +119,13 @@ const App = () => {
     };
     requestLocationPermission();
   }, []);
+
+  useEffect(() => {
+    const filtered = stores.filter(store =>
+      store.name.toLowerCase().includes(searchText.toLowerCase()),
+    );
+    setFilteredStores(filtered);
+  }, [searchText, stores]);
 
   useEffect(() => {
     if (userLocation.lat !== 0 && userLocation.lng !== 0) {
@@ -163,6 +176,22 @@ const App = () => {
     }
   };
 
+  const searchContainerStyle = {
+    ...styles.searchContainer,
+    backgroundColor: isDarkTheme
+      ? 'rgba(28, 28, 30, 0.8)'
+      : 'rgba(255, 255, 255, 0.8)',
+  };
+
+  const searchInputStyle = {
+    ...styles.searchInput,
+    color: isDarkTheme ? '#FFFFFF' : '#000000',
+    backgroundColor: isDarkTheme
+      ? 'rgba(28, 28, 30, 0.8)'
+      : 'rgba(255, 255, 255, 0.8)',
+    borderRadius: 20,
+  };
+
   return (
     <SafeAreaView
       style={[styles.container, isDarkTheme && styles.darkContainer]}>
@@ -197,7 +226,7 @@ const App = () => {
                 pinColor="blue"
               />
             )}
-            {stores.map(store => (
+            {filteredStores.map(store => (
               <Marker
                 key={store.id}
                 coordinate={{
@@ -223,6 +252,23 @@ const App = () => {
               onValueChange={toggleTheme}
               value={isDarkTheme}
             />
+
+            <View style={searchContainerStyle}>
+              <View style={searchInputStyle}>
+                <FontAwesome6
+                  style={styles.locationDot}
+                  name="location-dot"
+                  size={20}
+                  color={isDarkTheme ? '#FFFFFF' : '#000000'}
+                />
+                <TextInput
+                  placeholder="Buscar tienda..."
+                  placeholderTextColor={isDarkTheme ? '#E1E1E1' : '#8e8e93'}
+                  value={searchText}
+                  onChangeText={setSearchText}
+                />
+              </View>
+            </View>
 
             {selectedStore ? (
               <>
@@ -271,7 +317,7 @@ const App = () => {
             ) : (
               <FlatList
                 horizontal
-                data={stores}
+                data={filteredStores}
                 renderItem={({item}) => (
                   <View
                     style={[
@@ -457,6 +503,22 @@ const styles = StyleSheet.create({
   modalText: {
     marginBottom: 15,
     textAlign: 'center',
+  },
+  searchContainer: {
+    borderRadius: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    zIndex: 2,
+  },
+  searchInput: {
+    flexDirection: 'row',
+    flex: 1,
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    fontSize: 16,
+  },
+  locationDot: {
+    marginRight: 5,
   },
 });
 
