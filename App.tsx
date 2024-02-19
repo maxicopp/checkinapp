@@ -8,14 +8,13 @@ import {
   Animated,
   Modal,
   Pressable,
-  Switch,
   PermissionsAndroid,
   Platform,
   TextInput,
   Dimensions,
+  useColorScheme,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Store} from './src/types/types';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
@@ -42,9 +41,9 @@ interface TabBarIconProps {
 const TabBarIcon = ({route, focused, color, size}: TabBarIconProps) => {
   let iconName: string = '';
   if (route.name === 'Menu') {
-    iconName = focused ? 'menu' : 'menu';
+    iconName = focused ? 'home' : 'home'; // Cambiado a 'home'
   } else if (route.name === 'Resetear Checkin') {
-    iconName = focused ? 'refresh' : 'refresh';
+    iconName = focused ? 'app-registration' : 'app-registration'; // Cambiado a 'note'
   } else if (route.name === 'Perfil') {
     iconName = focused ? 'person' : 'person';
   }
@@ -58,10 +57,14 @@ const BottomTabNavigator = ({isDarkTheme = true}) => (
     screenOptions={({route}) => ({
       headerShown: false,
       tabBarIcon: props => <TabBarIcon route={route} {...props} />,
-      tabBarActiveTintColor: isDarkTheme ? '#f5dd4b' : 'tomato',
-      tabBarInactiveTintColor: isDarkTheme ? '#f4f3f4' : 'gray',
+      tabBarActiveTintColor: isDarkTheme ? '#FF5410' : 'tomato',
+      tabBarInactiveTintColor: isDarkTheme ? '#ffffff' : '#000000',
       tabBarStyle: {
-        backgroundColor: isDarkTheme ? '#121212' : '#FFFFFF',
+        backgroundColor: isDarkTheme
+          ? 'rgba(28, 28, 30, 0.4)'
+          : 'rgba(255, 255, 255, 0.6)',
+        borderTopColor: '#5D4F4A',
+        borderTopWidth: 0.3,
       },
       tabBarLabel: () => null,
     })}>
@@ -120,13 +123,15 @@ const MainScreen = () => {
   const [fadeAnim] = useState(new Animated.Value(0));
   const [modalVisible, setModalVisible] = useState(false);
   const [checkinData, setCheckinData] = useState({});
-  const [isDarkTheme, setIsDarkTheme] = useState(false);
   const [userLocation, setUserLocation] = useState({
     lat: 36.6834695,
     lng: -4.4706081,
   });
   const [searchText, setSearchText] = useState('');
   const [filteredStores, setFilteredStores] = useState<Store[]>([]);
+
+  const scheme = useColorScheme();
+  const isDarkTheme = scheme === 'dark';
 
   const mapRef = useRef<any>(null);
 
@@ -140,9 +145,6 @@ const MainScreen = () => {
       duration: 1000,
       useNativeDriver: true,
     }).start();
-    AsyncStorage.getItem('theme').then(value => {
-      setIsDarkTheme(value === 'dark');
-    });
 
     const requestLocationPermission = async () => {
       if (Platform.OS === 'android') {
@@ -214,12 +216,6 @@ const MainScreen = () => {
     await resetStores();
     const updatedStores = await fetchStores();
     setStores(updatedStores);
-  };
-
-  const toggleTheme = () => {
-    const newTheme = !isDarkTheme;
-    setIsDarkTheme(newTheme);
-    AsyncStorage.setItem('theme', newTheme ? 'dark' : 'light');
   };
 
   const centerMapOnUserLocation = () => {
@@ -306,18 +302,6 @@ const MainScreen = () => {
         </TouchableOpacity>
         <View style={styles.overlayContainer}>
           <>
-            {/*
-
-
-              <Switch
-                trackColor={{false: '#767577', true: '#81b0ff'}}
-                thumbColor={isDarkTheme ? '#f5dd4b' : '#f4f3f4'}
-                onValueChange={toggleTheme}
-                value={isDarkTheme}
-              />
-
-          */}
-
             <View style={searchContainerStyle}>
               <View style={searchInputStyle}>
                 <FontAwesome6
@@ -331,7 +315,7 @@ const MainScreen = () => {
                   placeholderTextColor={isDarkTheme ? '#E1E1E1' : '#8e8e93'}
                   value={searchText}
                   onChangeText={setSearchText}
-                  style={{flex: 1, color: isDarkTheme ? '#FFFFFF' : '#000000'}} // Asegúrate de que esta línea esté presente
+                  style={{flex: 1, color: isDarkTheme ? '#FFFFFF' : '#000000'}}
                 />
               </View>
             </View>
