@@ -4,7 +4,7 @@ import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import MainScreen from '../screens/MainScreen';
 import ResetCheckinScreen from '../screens/ResetCheckinScreen';
 import ProfileScreen from '../screens/ProfileScreen';
-import TabBarIcon from './TabBarIcon';
+import TabBarIcon from '../components/TabBarIcon';
 
 const Tab = createBottomTabNavigator();
 
