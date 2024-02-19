@@ -23,21 +23,10 @@ import MapView, {Marker, UrlTile} from 'react-native-maps';
 import {Store} from '../types/types';
 import FooterComponent from '../components/FooterComponent';
 import Geolocation from '@react-native-community/geolocation';
+import {fetchStores, resetStores, checkin} from '../services/storeService';
 
 const API_URL = 'https://ikp-mobile-challenge-backend.up.railway.app/';
 const {width} = Dimensions.get('window');
-
-const fetchStores = async () => {
-  const response = await fetch(`${API_URL}stores`);
-  const data: Store[] = await response.json();
-  return data;
-};
-
-const resetStores = async () => {
-  await fetch(`${API_URL}stores/reset`, {
-    method: 'POST',
-  });
-};
 
 const MainScreen = () => {
   const [stores, setStores] = useState<Store[]>([]);
@@ -121,14 +110,9 @@ const MainScreen = () => {
     storeId: string,
     taskId: string,
   ): Promise<void> => {
-    const response = await fetch(`${API_URL}checkin`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({storeId, taskId}),
-    });
-    const data = await response.json();
+    console.log({storeId, taskId});
+    console.log(parseInt(storeId, 10), parseInt(taskId, 10));
+    const data = await checkin(storeId, taskId);
     console.log(JSON.stringify(data, null, 2));
     setCheckinData(data);
     setModalVisible(true);
