@@ -1,9 +1,9 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {Modal, View, Text, Pressable, StyleSheet, Image} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {Task} from '../types/types';
 import StoreAdditionalInfo from './StoreAdditionalInfo';
-import {checkin} from '../services/storeService';
+import {useStores} from '../context/storeContext';
 
 interface StoreDetailsModalProps {
   modalVisible: boolean;
@@ -15,6 +15,7 @@ interface StoreDetailsModalProps {
   shippingMethods: {id: string; name: string; description: string}[];
   tasks: Task[];
 }
+
 const StoreDetailsModal: React.FC<StoreDetailsModalProps> = ({
   modalVisible,
   setModalVisible,
@@ -23,20 +24,31 @@ const StoreDetailsModal: React.FC<StoreDetailsModalProps> = ({
   storeDirection,
   schedule,
   shippingMethods,
-  tasks,
+  tasks: initialTasks,
 }) => {
+  const {checkin} = useStores();
   const [isExpanded, setIsExpanded] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [tasks, setTasks] = useState<Task[]>(initialTasks);
+
+  useEffect(() => {
+    setTasks(initialTasks);
+  }, [initialTasks]);
 
   const handleCheckin = async (taskId: string) => {
-    // Asumiendo que tienes acceso a un storeId en este componente
     try {
-      const response = await checkin(storeId, taskId);
-      console.log(response); // Maneja la respuesta como prefieras
-      // Por ejemplo, podrías cerrar el modal o mostrar un mensaje de éxito aquí
+      await checkin(storeId, taskId);
+      // Actualiza el estado de tasks marcando la tarea como asignada
+      setTasks(
+        tasks.map(task => {
+          if (task.id === taskId) {
+            return {...task, assigned: true};
+          }
+          return task;
+        }),
+      );
     } catch (error) {
       console.error('Error during check-in:', error);
-      // Maneja el error como prefieras
     }
   };
 
