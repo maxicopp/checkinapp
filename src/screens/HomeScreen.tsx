@@ -306,6 +306,7 @@ const HomeScreen = () => {
         </View>
       </Modal>
       <StoreDetailsModal
+        storeDirection={selectedMarker ? selectedMarker.address.direction : ''}
         modalVisible={markerModalVisible}
         setModalVisible={setMarkerModalVisible}
         storeName={selectedMarker ? selectedMarker.name : ''}
