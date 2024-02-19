@@ -1,6 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {
-  SafeAreaView,
   Text,
   View,
   FlatList,
@@ -13,15 +12,64 @@ import {
   PermissionsAndroid,
   Platform,
   TextInput,
+  Dimensions,
 } from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Store} from './src/types/types';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Geolocation from '@react-native-community/geolocation';
 import MapView, {UrlTile, Marker} from 'react-native-maps';
+import {NavigationContainer} from '@react-navigation/native';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 
 const API_URL = 'https://ikp-mobile-challenge-backend.up.railway.app/';
+
+const {width} = Dimensions.get('window');
+
+interface Route {
+  name: string;
+}
+
+interface TabBarIconProps {
+  route: Route;
+  focused: boolean;
+  color: string;
+  size: number;
+}
+const TabBarIcon = ({route, focused, color, size}: TabBarIconProps) => {
+  let iconName: string = '';
+  if (route.name === 'Menu') {
+    iconName = focused ? 'menu' : 'menu';
+  } else if (route.name === 'Resetear Checkin') {
+    iconName = focused ? 'refresh' : 'refresh';
+  } else if (route.name === 'Perfil') {
+    iconName = focused ? 'person' : 'person';
+  }
+  return <MaterialIcons name={iconName} size={size} color={color} />;
+};
+
+const Tab = createBottomTabNavigator();
+
+const BottomTabNavigator = ({isDarkTheme = true}) => (
+  <Tab.Navigator
+    screenOptions={({route}) => ({
+      headerShown: false,
+      tabBarIcon: props => <TabBarIcon route={route} {...props} />,
+      tabBarActiveTintColor: isDarkTheme ? '#f5dd4b' : 'tomato',
+      tabBarInactiveTintColor: isDarkTheme ? '#f4f3f4' : 'gray',
+      tabBarStyle: {
+        backgroundColor: isDarkTheme ? '#121212' : '#FFFFFF',
+      },
+      tabBarLabel: () => null,
+    })}>
+    <Tab.Screen name="Menu" component={MainScreen} />
+    <Tab.Screen name="Resetear Checkin" component={ResetCheckinScreen} />
+    <Tab.Screen name="Perfil" component={ProfileScreen} />
+  </Tab.Navigator>
+);
 
 const fetchStores = async () => {
   const response = await fetch(`${API_URL}stores`);
@@ -54,7 +102,19 @@ const FooterComponent = ({
   </>
 );
 
-const App = () => {
+const ResetCheckinScreen = () => (
+  <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+    <Text>Resetear Checkin</Text>
+  </View>
+);
+
+const ProfileScreen = () => (
+  <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+    <Text>Perfil</Text>
+  </View>
+);
+
+const MainScreen = () => {
   const [stores, setStores] = useState<Store[]>([]);
   const [selectedStore, setSelectedStore] = useState<Store | null>(null);
   const [fadeAnim] = useState(new Animated.Value(0));
@@ -179,16 +239,16 @@ const App = () => {
   const searchContainerStyle = {
     ...styles.searchContainer,
     backgroundColor: isDarkTheme
-      ? 'rgba(28, 28, 30, 0.8)'
-      : 'rgba(255, 255, 255, 0.8)',
+      ? 'rgba(28, 28, 30, 0.4)'
+      : 'rgba(255, 255, 255, 0.6)',
   };
 
   const searchInputStyle = {
     ...styles.searchInput,
     color: isDarkTheme ? '#FFFFFF' : '#000000',
     backgroundColor: isDarkTheme
-      ? 'rgba(28, 28, 30, 0.8)'
-      : 'rgba(255, 255, 255, 0.8)',
+      ? 'rgba(28, 28, 30, 0.4)'
+      : 'rgba(255, 255, 255, 0.6)',
     borderRadius: 20,
   };
 
@@ -246,12 +306,17 @@ const App = () => {
         </TouchableOpacity>
         <View style={styles.overlayContainer}>
           <>
-            <Switch
-              trackColor={{false: '#767577', true: '#81b0ff'}}
-              thumbColor={isDarkTheme ? '#f5dd4b' : '#f4f3f4'}
-              onValueChange={toggleTheme}
-              value={isDarkTheme}
-            />
+            {/*
+
+
+              <Switch
+                trackColor={{false: '#767577', true: '#81b0ff'}}
+                thumbColor={isDarkTheme ? '#f5dd4b' : '#f4f3f4'}
+                onValueChange={toggleTheme}
+                value={isDarkTheme}
+              />
+
+          */}
 
             <View style={searchContainerStyle}>
               <View style={searchInputStyle}>
@@ -266,6 +331,7 @@ const App = () => {
                   placeholderTextColor={isDarkTheme ? '#E1E1E1' : '#8e8e93'}
                   value={searchText}
                   onChangeText={setSearchText}
+                  style={{flex: 1, color: isDarkTheme ? '#FFFFFF' : '#000000'}} // Asegúrate de que esta línea esté presente
                 />
               </View>
             </View>
@@ -315,32 +381,35 @@ const App = () => {
                 />
               </>
             ) : (
-              <FlatList
-                horizontal
-                data={filteredStores}
-                renderItem={({item}) => (
-                  <View
-                    style={[
-                      styles.storeItem,
-                      isDarkTheme && styles.darkStoreItem,
-                    ]}>
-                    <Icon
-                      name="local-mall"
-                      size={20}
-                      color={isDarkTheme ? '#E1E1E1' : '#34495E'}
-                    />
-                    <Text style={[styles.text, isDarkTheme && styles.darkText]}>
-                      {item.name}
-                    </Text>
-                    <TouchableOpacity
-                      style={styles.button}
-                      onPress={() => setSelectedStore(item)}>
-                      <Text style={styles.buttonText}>Ver tareas</Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
-                keyExtractor={item => item.id.toString()}
-              />
+              <View>
+                <FlatList
+                  horizontal
+                  data={filteredStores}
+                  renderItem={({item}) => (
+                    <View
+                      style={[
+                        styles.storeItem,
+                        isDarkTheme && styles.darkStoreItem,
+                      ]}>
+                      <Icon
+                        name="local-mall"
+                        size={20}
+                        color={isDarkTheme ? '#E1E1E1' : '#34495E'}
+                      />
+                      <Text
+                        style={[styles.text, isDarkTheme && styles.darkText]}>
+                        {item.name}
+                      </Text>
+                      <TouchableOpacity
+                        style={styles.button}
+                        onPress={() => setSelectedStore(item)}>
+                        <Text style={styles.buttonText}>Ver tareas</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                  keyExtractor={item => item.id.toString()}
+                />
+              </View>
             )}
           </>
         </View>
@@ -370,6 +439,14 @@ const App = () => {
   );
 };
 
+const App = () => {
+  return (
+    <NavigationContainer>
+      <BottomTabNavigator />
+    </NavigationContainer>
+  );
+};
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -386,21 +463,19 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 20,
     right: 20,
-    backgroundColor: '#00652F',
+    backgroundColor: '#FC5511',
     padding: 10,
     borderRadius: 20,
+    zIndex: 4,
   },
   centerButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
   },
   overlayContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
     padding: 20,
     zIndex: 1,
+    position: 'absolute',
   },
   darkContainer: {
     backgroundColor: '#121212',
@@ -505,6 +580,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   searchContainer: {
+    width: width - 40,
     borderRadius: 20,
     flexDirection: 'row',
     alignItems: 'center',
