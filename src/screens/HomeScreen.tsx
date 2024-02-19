@@ -305,13 +305,19 @@ const HomeScreen = () => {
           </View>
         </View>
       </Modal>
-      <StoreDetailsModal
-        storeDirection={selectedMarker ? selectedMarker.address.direction : ''}
-        modalVisible={markerModalVisible}
-        setModalVisible={setMarkerModalVisible}
-        storeName={selectedMarker ? selectedMarker.name : ''}
-        isDarkTheme={isDarkTheme}
-      />
+      {selectedMarker && (
+        <StoreDetailsModal
+          storeDirection={
+            selectedMarker ? selectedMarker.address.direction : ''
+          }
+          modalVisible={markerModalVisible}
+          setModalVisible={setMarkerModalVisible}
+          storeName={selectedMarker ? selectedMarker.name : ''}
+          schedule={selectedMarker?.schedule}
+          shippingMethods={selectedMarker?.shipping_methods}
+          tasks={selectedMarker?.tasks}
+        />
+      )}
     </Animated.View>
   );
 };

@@ -1,19 +1,26 @@
 import React, {useState} from 'react';
 import {Modal, View, Text, Pressable, StyleSheet, Image} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import {Task} from '../types/types';
+import StoreAdditionalInfo from './StoreAdditionalInfo';
 
 interface StoreDetailsModalProps {
   modalVisible: boolean;
   setModalVisible: (visible: boolean) => void;
   storeName: string;
   storeDirection: string;
+  schedule: {from: string; end: string; timezone: string};
+  shippingMethods: {id: string; name: string; description: string}[];
+  tasks: Task[];
 }
-
 const StoreDetailsModal: React.FC<StoreDetailsModalProps> = ({
   modalVisible,
   setModalVisible,
   storeName,
   storeDirection,
+  schedule,
+  shippingMethods,
+  tasks,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
@@ -47,9 +54,11 @@ const StoreDetailsModal: React.FC<StoreDetailsModalProps> = ({
             {storeDirection || 'No Direction Provided'}
           </Text>
           {isExpanded && (
-            <View>
-              <Text style={styles.modalText}>Additional Store Information</Text>
-            </View>
+            <StoreAdditionalInfo
+              schedule={schedule}
+              shippingMethods={shippingMethods}
+              tasks={tasks}
+            />
           )}
           <Pressable
             onPress={() => setIsExpanded(!isExpanded)}
@@ -137,6 +146,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: 'black',
     alignSelf: 'flex-start',
+    overflow: 'scroll',
   },
 });
 
