@@ -3,7 +3,10 @@ import {PermissionsAndroid, Platform} from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 
 export const useLocationPermission = () => {
-  const [userLocation, setUserLocation] = useState({lat: 0, lng: 0});
+  const [userLocation, setUserLocation] = useState({
+    lat: 36.6825,
+    lng: -4.4606,
+  });
 
   useEffect(() => {
     const requestLocationPermission = async () => {
@@ -19,6 +22,8 @@ export const useLocationPermission = () => {
           },
         );
         if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+          // TODO: use real user location, for testing purposes I'm using this one
+          /*
           Geolocation.getCurrentPosition(
             position => {
               setUserLocation({
@@ -28,7 +33,7 @@ export const useLocationPermission = () => {
             },
             error => console.log(error),
             {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000},
-          );
+          );*/
         } else {
           console.log('Location permission denied');
         }

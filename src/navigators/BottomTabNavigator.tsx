@@ -1,7 +1,7 @@
 import React from 'react';
 import {useColorScheme} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import MainScreen from '../screens/MainScreen';
+import HomeScreen from '../screens/HomeScreen';
 import ResetCheckinScreen from '../screens/ResetCheckinScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import TabBarIcon from '../components/TabBarIcon';
@@ -26,7 +26,7 @@ const BottomTabNavigator = () => {
         },
         tabBarLabel: () => null,
       })}>
-      <Tab.Screen name="Menu" component={MainScreen} />
+      <Tab.Screen name="Menu" component={HomeScreen} />
       <Tab.Screen name="Resetear Checkin" component={ResetCheckinScreen} />
       <Tab.Screen name="Perfil" component={ProfileScreen} />
     </Tab.Navigator>

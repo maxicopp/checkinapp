@@ -13,6 +13,8 @@ import {
   Dimensions,
   useColorScheme,
   SafeAreaView,
+  Platform,
+  Image,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
@@ -22,10 +24,11 @@ import FooterComponent from '../components/FooterComponent';
 import {fetchStores, resetStores, checkin} from '../services/storeService';
 import StoreList from '../components/StoreList';
 import {useLocationPermission} from '../hooks/useLocationPermission';
+import markerStore from '../assets/marker-default.png';
 
 const {width} = Dimensions.get('window');
 
-const MainScreen = () => {
+const HomeScreen = () => {
   const [stores, setStores] = useState<Store[]>([]);
   const [selectedStore, setSelectedStore] = useState<Store | null>(null);
   const [fadeAnim] = useState(new Animated.Value(0));
@@ -60,9 +63,16 @@ const MainScreen = () => {
 
   useEffect(() => {
     if (userLocation.lat !== 0 && userLocation.lng !== 0) {
-      centerMapOnUserLocation();
+      //centerMapOnUserLocation();
     }
   }, [userLocation]);
+
+  const [mapReady, setMapReady] = useState(false);
+
+  const handleMapReady = () => {
+    setMapReady(true);
+    centerMapOnUserLocation();
+  };
 
   const handleCheckin = async (
     storeId: string,
@@ -110,7 +120,11 @@ const MainScreen = () => {
       ? 'rgba(28, 28, 30, 0.4)'
       : 'rgba(255, 255, 255, 0.6)',
     borderRadius: 20,
+    paddingVertical: Platform.OS === 'ios' ? 10 : 0,
   };
+
+  console.log({userLocation});
+  console.log({filteredStores});
 
   return (
     <SafeAreaView
@@ -123,6 +137,7 @@ const MainScreen = () => {
         ]}>
         <View style={styles.map}>
           <MapView
+            onMapReady={handleMapReady}
             ref={mapRef}
             style={styles.map}
             initialRegion={{
@@ -136,14 +151,15 @@ const MainScreen = () => {
               tileSize={256}
               maximumZ={19}
             />
-            {userLocation.lat !== 0 && userLocation.lng !== 0 && (
+            {userLocation && (
               <Marker
+                key={userLocation.lat}
                 coordinate={{
                   latitude: userLocation.lat,
                   longitude: userLocation.lng,
                 }}
                 title="Tu ubicación"
-                pinColor="blue"
+                pinColor="#FC5511"
               />
             )}
             {filteredStores.map(store => (
@@ -153,9 +169,9 @@ const MainScreen = () => {
                   latitude: parseFloat(store.address.coordinate.lat),
                   longitude: parseFloat(store.address.coordinate.lng),
                 }}
-                title={store.name}
-                pinColor="green"
-              />
+                title={store.name}>
+                <Image source={markerStore} style={{width: 40, height: 40}} />
+              </Marker>
             ))}
           </MapView>
         </View>
@@ -263,7 +279,7 @@ const MainScreen = () => {
   );
 };
 
-export default MainScreen;
+export default HomeScreen;
 
 const styles = StyleSheet.create({
   container: {
