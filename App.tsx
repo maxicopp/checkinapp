@@ -1,12 +1,15 @@
 import React from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import BottomTabNavigator from './src/navigators/BottomTabNavigator';
+import {StoreProvider} from './src/context/storeContext';
 
 const App = () => {
   return (
-    <NavigationContainer>
-      <BottomTabNavigator />
-    </NavigationContainer>
+    <StoreProvider>
+      <NavigationContainer>
+        <BottomTabNavigator />
+      </NavigationContainer>
+    </StoreProvider>
   );
 };
 

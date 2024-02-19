@@ -10,9 +10,10 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-import {resetStores} from '../services/storeService';
+import {useStores} from '../context/storeContext';
 
 const ResetCheckinScreen = () => {
+  const {fetchStores, resetStores} = useStores();
   const animation = new Animated.Value(1);
   const [resetSuccessful, setResetSuccessful] = useState(false);
   const [buttonColor, setButtonColor] = useState('#FC5511');
@@ -41,6 +42,8 @@ const ResetCheckinScreen = () => {
       try {
         await resetStores();
         setResetSuccessful(true);
+
+        fetchStores();
       } catch (error) {
         Alert.alert('Error al resetear tiendas');
       }
