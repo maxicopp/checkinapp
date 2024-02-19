@@ -1,5 +1,4 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, {useEffect, useRef, useState} from 'react';
 import {
   View,
@@ -14,18 +13,16 @@ import {
   Dimensions,
   useColorScheme,
   SafeAreaView,
-  Platform,
-  PermissionsAndroid,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
 import MapView, {Marker, UrlTile} from 'react-native-maps';
 import {Store} from '../types/types';
 import FooterComponent from '../components/FooterComponent';
-import Geolocation from '@react-native-community/geolocation';
 import {fetchStores, resetStores, checkin} from '../services/storeService';
+import StoreList from '../components/StoreList';
+import {useLocationPermission} from '../hooks/useLocationPermission';
 
-const API_URL = 'https://ikp-mobile-challenge-backend.up.railway.app/';
 const {width} = Dimensions.get('window');
 
 const MainScreen = () => {
@@ -33,17 +30,13 @@ const MainScreen = () => {
   const [selectedStore, setSelectedStore] = useState<Store | null>(null);
   const [fadeAnim] = useState(new Animated.Value(0));
   const [modalVisible, setModalVisible] = useState(false);
-  const [checkinData, setCheckinData] = useState({});
-  const [userLocation, setUserLocation] = useState({
-    lat: 36.6834695,
-    lng: -4.4706081,
-  });
+  const [, setCheckinData] = useState({});
   const [searchText, setSearchText] = useState('');
   const [filteredStores, setFilteredStores] = useState<Store[]>([]);
+  const userLocation = useLocationPermission();
 
   const scheme = useColorScheme();
   const isDarkTheme = scheme === 'dark';
-
   const mapRef = useRef<any>(null);
 
   useEffect(() => {
@@ -56,41 +49,6 @@ const MainScreen = () => {
       duration: 1000,
       useNativeDriver: true,
     }).start();
-
-    const requestLocationPermission = async () => {
-      if (Platform.OS === 'android') {
-        try {
-          const granted = await PermissionsAndroid.request(
-            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-            {
-              title: 'Location Permission',
-              message: 'This app needs access to your location.',
-              buttonNeutral: 'Ask Me Later',
-              buttonNegative: 'Cancel',
-              buttonPositive: 'OK',
-            },
-          );
-          if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-            console.log('You can use the location');
-            Geolocation.getCurrentPosition(
-              position => {
-                setUserLocation({
-                  lat: position.coords.latitude,
-                  lng: position.coords.longitude,
-                });
-              },
-              error => console.log(error),
-              {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000},
-            );
-          } else {
-            console.log('Location permission denied');
-          }
-        } catch (err) {
-          console.warn(err);
-        }
-      }
-    };
-    requestLocationPermission();
   }, []);
 
   useEffect(() => {
@@ -271,35 +229,11 @@ const MainScreen = () => {
                 />
               </>
             ) : (
-              <View>
-                <FlatList
-                  horizontal
-                  data={filteredStores}
-                  renderItem={({item}) => (
-                    <View
-                      style={[
-                        styles.storeItem,
-                        isDarkTheme && styles.darkStoreItem,
-                      ]}>
-                      <Icon
-                        name="local-mall"
-                        size={20}
-                        color={isDarkTheme ? '#E1E1E1' : '#34495E'}
-                      />
-                      <Text
-                        style={[styles.text, isDarkTheme && styles.darkText]}>
-                        {item.name}
-                      </Text>
-                      <TouchableOpacity
-                        style={styles.button}
-                        onPress={() => setSelectedStore(item)}>
-                        <Text style={styles.buttonText}>Ver tareas</Text>
-                      </TouchableOpacity>
-                    </View>
-                  )}
-                  keyExtractor={item => item.id.toString()}
-                />
-              </View>
+              <StoreList
+                stores={filteredStores}
+                onSelectStore={setSelectedStore}
+                isDarkTheme={isDarkTheme}
+              />
             )}
           </>
         </View>
