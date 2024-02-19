@@ -18,13 +18,13 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
-import MapView, {Marker, UrlTile} from 'react-native-maps';
+import MapView, {Marker, Polyline, UrlTile} from 'react-native-maps';
 import {Store} from '../types/types';
 import FooterComponent from '../components/FooterComponent';
 import {fetchStores, resetStores, checkin} from '../services/storeService';
-import StoreList from '../components/StoreList';
 import {useLocationPermission} from '../hooks/useLocationPermission';
 import markerStore from '../assets/marker-default.png';
+import StoreDetailsModal from '../components/StoreDetailsModal';
 
 const {width} = Dimensions.get('window');
 
@@ -38,9 +38,13 @@ const HomeScreen = () => {
   const [filteredStores, setFilteredStores] = useState<Store[]>([]);
   const userLocation = useLocationPermission();
 
+  const [markerModalVisible, setMarkerModalVisible] = useState(false);
+  const [selectedMarker, setSelectedMarker] = useState<Store | null>(null);
+  const [closestStore, setClosestStore] = useState<Store | null>(null);
+
   const scheme = useColorScheme();
   const isDarkTheme = scheme === 'dark';
-  const mapRef = useRef<any>(null);
+  const mapRef = useRef<MapView>(null);
 
   useEffect(() => {
     fetchStores().then(data => {
@@ -61,17 +65,42 @@ const HomeScreen = () => {
     setFilteredStores(filtered);
   }, [searchText, stores]);
 
-  useEffect(() => {
-    if (userLocation.lat !== 0 && userLocation.lng !== 0) {
-      //centerMapOnUserLocation();
-    }
-  }, [userLocation]);
+  const calculateDistance = (
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number,
+  ): number => {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLon = (lon2 - lon1) * (Math.PI / 180);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * (Math.PI / 180)) *
+        Math.cos(lat2 * (Math.PI / 180)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c;
+    return distance;
+  };
 
-  const [mapReady, setMapReady] = useState(false);
-
-  const handleMapReady = () => {
-    setMapReady(true);
-    centerMapOnUserLocation();
+  const findClosestStore = (): Store | null => {
+    let storeFound: Store | null = null;
+    let minDistance = Number.MAX_VALUE;
+    stores.forEach((store: Store) => {
+      const distance = calculateDistance(
+        userLocation.lat,
+        userLocation.lng,
+        parseFloat(store.address.coordinate.lat),
+        parseFloat(store.address.coordinate.lng),
+      );
+      if (distance < minDistance) {
+        storeFound = store;
+        minDistance = distance;
+      }
+    });
+    return storeFound;
   };
 
   const handleCheckin = async (
@@ -106,6 +135,11 @@ const HomeScreen = () => {
     }
   };
 
+  const onMarkerPress = (store: Store) => {
+    setSelectedMarker(store);
+    setMarkerModalVisible(true);
+  };
+
   const searchContainerStyle = {
     ...styles.searchContainer,
     backgroundColor: isDarkTheme
@@ -123,159 +157,161 @@ const HomeScreen = () => {
     paddingVertical: Platform.OS === 'ios' ? 10 : 0,
   };
 
-  console.log({userLocation});
-  console.log({filteredStores});
-
   return (
-    <SafeAreaView
-      style={[styles.container, isDarkTheme && styles.darkContainer]}>
-      <Animated.View
-        style={[
-          styles.container,
-          isDarkTheme && styles.darkContainer,
-          {opacity: fadeAnim},
-        ]}>
-        <View style={styles.map}>
-          <MapView
-            onMapReady={handleMapReady}
-            ref={mapRef}
-            style={styles.map}
-            initialRegion={{
-              latitude: userLocation.lat,
-              longitude: userLocation.lng,
-              latitudeDelta: 0.0922,
-              longitudeDelta: 0.0421,
-            }}>
-            <UrlTile
-              urlTemplate="https://a.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              tileSize={256}
-              maximumZ={19}
-            />
-            {userLocation && (
-              <Marker
-                key={userLocation.lat}
-                coordinate={{
-                  latitude: userLocation.lat,
-                  longitude: userLocation.lng,
-                }}
-                title="Tu ubicación"
-                pinColor="#FC5511"
-              />
-            )}
-            {filteredStores.map(store => (
-              <Marker
-                key={store.id}
-                coordinate={{
-                  latitude: parseFloat(store.address.coordinate.lat),
-                  longitude: parseFloat(store.address.coordinate.lng),
-                }}
-                title={store.name}>
-                <Image source={markerStore} style={{width: 40, height: 40}} />
-              </Marker>
-            ))}
-          </MapView>
-        </View>
-        <TouchableOpacity
-          style={styles.centerButton}
-          onPress={centerMapOnUserLocation}>
-          <FontAwesome6 name="location-crosshairs" size={20} color="#FFFFFF" />
-        </TouchableOpacity>
-        <View style={styles.overlayContainer}>
-          <>
-            <View style={searchContainerStyle}>
-              <View style={searchInputStyle}>
-                <FontAwesome6
-                  style={styles.locationDot}
-                  name="location-dot"
-                  size={20}
-                  color={isDarkTheme ? '#FFFFFF' : '#000000'}
-                />
-                <TextInput
-                  placeholder="Buscar tienda..."
-                  placeholderTextColor={isDarkTheme ? '#E1E1E1' : '#8e8e93'}
-                  value={searchText}
-                  onChangeText={setSearchText}
-                  style={{flex: 1, color: isDarkTheme ? '#FFFFFF' : '#000000'}}
-                />
-              </View>
-            </View>
-
-            {selectedStore ? (
-              <>
-                <Text style={[styles.header, isDarkTheme && styles.darkText]}>
-                  Tareas de la tienda: {selectedStore.name}
-                </Text>
-                <Text style={[styles.text, isDarkTheme && styles.darkText]}>
-                  Dirección: {selectedStore.address.direction}
-                </Text>
-                <Text style={[styles.text, isDarkTheme && styles.darkText]}>
-                  Horario: {selectedStore.schedule.from} -{' '}
-                  {selectedStore.schedule.end} (
-                  {selectedStore.schedule.timezone})
-                </Text>
-                <FlatList
-                  data={selectedStore.tasks}
-                  renderItem={({item}) => (
-                    <View
-                      style={[
-                        styles.taskItem,
-                        isDarkTheme && styles.darkTaskItem,
-                      ]}>
-                      <Text
-                        style={[styles.text, isDarkTheme && styles.darkText]}>
-                        {item.description}
-                      </Text>
-                      <TouchableOpacity
-                        style={styles.button}
-                        onPress={() =>
-                          handleCheckin(selectedStore.id, item.id)
-                        }>
-                        <Icon name="check-circle" size={20} color="#FFFFFF" />
-                        <Text style={styles.buttonText}>Check-in</Text>
-                      </TouchableOpacity>
-                    </View>
-                  )}
-                  keyExtractor={item => item.id.toString()}
-                  ListFooterComponent={
-                    <FooterComponent
-                      onPress={() => setSelectedStore(null)}
-                      onReset={handleResetStores}
-                    />
-                  }
-                />
-              </>
-            ) : (
-              <StoreList
-                stores={filteredStores}
-                onSelectStore={setSelectedStore}
-                isDarkTheme={isDarkTheme}
-              />
-            )}
-          </>
-        </View>
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={() => {
-            setModalVisible(!modalVisible);
+    <Animated.View
+      style={[
+        styles.container,
+        isDarkTheme && styles.darkContainer,
+        {opacity: fadeAnim},
+      ]}>
+      <View style={styles.map}>
+        <MapView
+          ref={mapRef}
+          style={styles.map}
+          initialRegion={{
+            latitude: userLocation.lat,
+            longitude: userLocation.lng,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421,
           }}>
-          <View style={styles.centeredView}>
-            <View
-              style={[styles.modalView, isDarkTheme && styles.darkModalView]}>
-              <Text style={[styles.modalText, isDarkTheme && styles.darkText]}>
-                Check-in realizado con éxito
-              </Text>
-              <Pressable
-                style={[styles.button, styles.buttonClose]}
-                onPress={() => setModalVisible(!modalVisible)}>
-                <Text style={styles.textStyle}>Cerrar</Text>
-              </Pressable>
-            </View>
+          <UrlTile
+            urlTemplate="https://a.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            tileSize={256}
+            maximumZ={19}
+          />
+          {userLocation && closestStore && (
+            <Polyline
+              coordinates={[
+                {latitude: userLocation.lat, longitude: userLocation.lng},
+                {
+                  latitude: parseFloat(closestStore.address.coordinate.lat),
+                  longitude: parseFloat(closestStore.address.coordinate.lng),
+                },
+              ]}
+              strokeColor="#00652F"
+              strokeWidth={4}
+            />
+          )}
+          {userLocation && (
+            <Marker
+              tracksViewChanges={false}
+              key={userLocation.lat}
+              coordinate={{
+                latitude: userLocation.lat,
+                longitude: userLocation.lng,
+              }}
+              pinColor="#FC5511"
+              onPress={() => {
+                const closestStoreFound = findClosestStore();
+                console.log({closestStoreFound});
+                setClosestStore(closestStoreFound);
+              }}
+            />
+          )}
+          {filteredStores.map(store => (
+            <Marker
+              tracksViewChanges={false}
+              key={store.id}
+              coordinate={{
+                latitude: parseFloat(store.address.coordinate.lat),
+                longitude: parseFloat(store.address.coordinate.lng),
+              }}
+              onPress={() => onMarkerPress(store)}>
+              <Image source={markerStore} style={{width: 40, height: 40}} />
+            </Marker>
+          ))}
+        </MapView>
+      </View>
+      <TouchableOpacity
+        style={styles.centerButton}
+        onPress={centerMapOnUserLocation}>
+        <FontAwesome6 name="location-crosshairs" size={20} color="#FFFFFF" />
+      </TouchableOpacity>
+      <SafeAreaView style={styles.overlayContainer}>
+        <View style={searchContainerStyle}>
+          <View style={searchInputStyle}>
+            <FontAwesome6
+              style={styles.locationDot}
+              name="location-dot"
+              size={20}
+              color={isDarkTheme ? '#FFFFFF' : '#000000'}
+            />
+            <TextInput
+              placeholder="Buscar tienda..."
+              placeholderTextColor={isDarkTheme ? '#E1E1E1' : '#8e8e93'}
+              value={searchText}
+              onChangeText={setSearchText}
+              style={{flex: 1, color: isDarkTheme ? '#FFFFFF' : '#000000'}}
+            />
           </View>
-        </Modal>
-      </Animated.View>
-    </SafeAreaView>
+        </View>
+
+        {selectedStore && (
+          <>
+            <Text style={[styles.header, isDarkTheme && styles.darkText]}>
+              Tareas de la tienda: {selectedStore.name}
+            </Text>
+            <Text style={[styles.text, isDarkTheme && styles.darkText]}>
+              Dirección: {selectedStore.address.direction}
+            </Text>
+            <Text style={[styles.text, isDarkTheme && styles.darkText]}>
+              Horario: {selectedStore.schedule.from} -{' '}
+              {selectedStore.schedule.end} ({selectedStore.schedule.timezone})
+            </Text>
+            <FlatList
+              data={selectedStore.tasks}
+              renderItem={({item}) => (
+                <View
+                  style={[styles.taskItem, isDarkTheme && styles.darkTaskItem]}>
+                  <Text style={[styles.text, isDarkTheme && styles.darkText]}>
+                    {item.description}
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.button}
+                    onPress={() => handleCheckin(selectedStore.id, item.id)}>
+                    <Icon name="check-circle" size={20} color="#FFFFFF" />
+                    <Text style={styles.buttonText}>Check-in</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+              keyExtractor={item => item.id.toString()}
+              ListFooterComponent={
+                <FooterComponent
+                  onPress={() => setSelectedStore(null)}
+                  onReset={handleResetStores}
+                />
+              }
+            />
+          </>
+        )}
+      </SafeAreaView>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(!modalVisible);
+        }}>
+        <View style={styles.centeredView}>
+          <View style={[styles.modalView, isDarkTheme && styles.darkModalView]}>
+            <Text style={[styles.modalText, isDarkTheme && styles.darkText]}>
+              Check-in realizado con éxito
+            </Text>
+            <Pressable
+              style={[styles.button, styles.buttonClose]}
+              onPress={() => setModalVisible(!modalVisible)}>
+              <Text style={styles.textStyle}>Cerrar</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+      <StoreDetailsModal
+        modalVisible={markerModalVisible}
+        setModalVisible={setMarkerModalVisible}
+        storeName={selectedMarker ? selectedMarker.name : ''}
+        isDarkTheme={isDarkTheme}
+      />
+    </Animated.View>
   );
 };
 
@@ -306,6 +342,7 @@ const styles = StyleSheet.create({
     padding: 20,
     zIndex: 1,
     position: 'absolute',
+    width: '100%',
   },
   darkContainer: {
     backgroundColor: '#121212',
@@ -323,25 +360,6 @@ const styles = StyleSheet.create({
   text: {
     color: '#34495E',
     marginBottom: 10,
-  },
-  storeItem: {
-    padding: 20,
-    backgroundColor: '#ECF0F1',
-    borderRadius: 8,
-    marginVertical: 10,
-    marginRight: 10,
-    shadowColor: '#7F8C8D',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 4.65,
-    elevation: 8,
-  },
-  darkStoreItem: {
-    backgroundColor: '#1E1E1E',
-    shadowColor: '#000',
   },
   taskItem: {
     padding: 20,
@@ -414,12 +432,14 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     flexDirection: 'row',
     alignItems: 'center',
+    alignSelf: 'center',
     zIndex: 2,
   },
   searchInput: {
     flexDirection: 'row',
     flex: 1,
     alignItems: 'center',
+    alignSelf: 'center',
     paddingHorizontal: 10,
     fontSize: 16,
   },
