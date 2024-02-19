@@ -312,6 +312,7 @@ const HomeScreen = () => {
           }
           modalVisible={markerModalVisible}
           setModalVisible={setMarkerModalVisible}
+          storeId={selectedMarker ? selectedMarker.id : ''}
           storeName={selectedMarker ? selectedMarker.name : ''}
           schedule={selectedMarker?.schedule}
           shippingMethods={selectedMarker?.shipping_methods}

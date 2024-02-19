@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {useState, useEffect} from 'react';
 import {PermissionsAndroid, Platform} from 'react-native';
-import Geolocation from '@react-native-community/geolocation';
+//import Geolocation from '@react-native-community/geolocation';
 
 export const useLocationPermission = () => {
   const [userLocation, setUserLocation] = useState({

@@ -3,10 +3,12 @@ import {Modal, View, Text, Pressable, StyleSheet, Image} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {Task} from '../types/types';
 import StoreAdditionalInfo from './StoreAdditionalInfo';
+import {checkin} from '../services/storeService';
 
 interface StoreDetailsModalProps {
   modalVisible: boolean;
   setModalVisible: (visible: boolean) => void;
+  storeId: string;
   storeName: string;
   storeDirection: string;
   schedule: {from: string; end: string; timezone: string};
@@ -16,6 +18,7 @@ interface StoreDetailsModalProps {
 const StoreDetailsModal: React.FC<StoreDetailsModalProps> = ({
   modalVisible,
   setModalVisible,
+  storeId,
   storeName,
   storeDirection,
   schedule,
@@ -24,6 +27,18 @@ const StoreDetailsModal: React.FC<StoreDetailsModalProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
+
+  const handleCheckin = async (taskId: string) => {
+    // Asumiendo que tienes acceso a un storeId en este componente
+    try {
+      const response = await checkin(storeId, taskId);
+      console.log(response); // Maneja la respuesta como prefieras
+      // Por ejemplo, podrías cerrar el modal o mostrar un mensaje de éxito aquí
+    } catch (error) {
+      console.error('Error during check-in:', error);
+      // Maneja el error como prefieras
+    }
+  };
 
   return (
     <Modal
@@ -58,6 +73,7 @@ const StoreDetailsModal: React.FC<StoreDetailsModalProps> = ({
               schedule={schedule}
               shippingMethods={shippingMethods}
               tasks={tasks}
+              onCheckin={handleCheckin}
             />
           )}
           <Pressable

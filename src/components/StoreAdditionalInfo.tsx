@@ -1,17 +1,19 @@
 import React from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import {Schedule, ShippingMethod, Task} from '../types/types';
 
 interface StoreAdditionalInfoProps {
   schedule: Schedule;
   shippingMethods: ShippingMethod[];
   tasks: Task[];
+  onCheckin: (taskId: string) => void;
 }
 
 const StoreAdditionalInfo: React.FC<StoreAdditionalInfoProps> = ({
   schedule,
   shippingMethods,
   tasks,
+  onCheckin,
 }) => {
   return (
     <View style={styles.additionalInfoContainer}>
@@ -33,9 +35,17 @@ const StoreAdditionalInfo: React.FC<StoreAdditionalInfoProps> = ({
       <View style={styles.sectionContainer}>
         <Text style={styles.sectionSubtitle}>Tasks:</Text>
         {tasks.map(({id, description, assigned}) => (
-          <Text key={id} style={styles.sectionContent}>
-            {description} - {assigned ? 'Assigned' : 'Not Assigned'}
-          </Text>
+          <View key={id} style={styles.taskContainer}>
+            <Text style={styles.sectionContent}>
+              {description} - {assigned ? 'Assigned' : 'Not Assigned'}
+            </Text>
+            <TouchableOpacity
+              style={[styles.checkinButton, assigned && styles.disabledButton]}
+              onPress={() => onCheckin(id)}
+              disabled={assigned}>
+              <Text style={styles.checkinButtonText}>Check-in</Text>
+            </TouchableOpacity>
+          </View>
         ))}
       </View>
     </View>
@@ -63,6 +73,25 @@ const styles = StyleSheet.create({
   sectionContent: {
     fontSize: 14,
     color: '#666',
+  },
+  taskContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  checkinButton: {
+    backgroundColor: '#007BFF',
+    padding: 5,
+    borderRadius: 4,
+    marginLeft: 10,
+  },
+  checkinButtonText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+  },
+  disabledButton: {
+    backgroundColor: '#CCCCCC',
   },
 });
 

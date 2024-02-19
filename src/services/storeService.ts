@@ -22,6 +22,7 @@ export const resetStores = async () => {
 };
 
 export const checkin = async (storeId: string, taskId: string) => {
+  console.log({storeId, taskId});
   try {
     const response = await axios.post(`${API_URL}checkin`, {
       storeId,
