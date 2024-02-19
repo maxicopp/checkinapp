@@ -1,4 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable react-native/no-inline-styles */
 import React, {useEffect, useRef, useState} from 'react';
 import {
   View,
@@ -21,19 +22,19 @@ import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
 import MapView, {Marker, Polyline, UrlTile} from 'react-native-maps';
 import {Store} from '../types/types';
 import FooterComponent from '../components/FooterComponent';
-import {fetchStores, resetStores, checkin} from '../services/storeService';
 import {useLocationPermission} from '../hooks/useLocationPermission';
 import markerStore from '../assets/marker-default.png';
 import StoreDetailsModal from '../components/StoreDetailsModal';
+import {useStores} from '../context/storeContext';
+import {resetStores} from '../services/storeService';
 
 const {width} = Dimensions.get('window');
 
 const HomeScreen = () => {
-  const [stores, setStores] = useState<Store[]>([]);
+  const {stores, checkin} = useStores();
   const [selectedStore, setSelectedStore] = useState<Store | null>(null);
   const [fadeAnim] = useState(new Animated.Value(0));
   const [modalVisible, setModalVisible] = useState(false);
-  const [, setCheckinData] = useState({});
   const [searchText, setSearchText] = useState('');
   const [filteredStores, setFilteredStores] = useState<Store[]>([]);
   const userLocation = useLocationPermission();
@@ -47,10 +48,6 @@ const HomeScreen = () => {
   const mapRef = useRef<MapView>(null);
 
   useEffect(() => {
-    fetchStores().then(data => {
-      setStores(data);
-      setFilteredStores(data);
-    });
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 1000,
@@ -107,18 +104,8 @@ const HomeScreen = () => {
     storeId: string,
     taskId: string,
   ): Promise<void> => {
-    console.log({storeId, taskId});
-    console.log(parseInt(storeId, 10), parseInt(taskId, 10));
-    const data = await checkin(storeId, taskId);
-    console.log(JSON.stringify(data, null, 2));
-    setCheckinData(data);
+    await checkin(storeId, taskId);
     setModalVisible(true);
-  };
-
-  const handleResetStores = async () => {
-    await resetStores();
-    const updatedStores = await fetchStores();
-    setStores(updatedStores);
   };
 
   const centerMapOnUserLocation = () => {
@@ -138,6 +125,10 @@ const HomeScreen = () => {
   const onMarkerPress = (store: Store) => {
     setSelectedMarker(store);
     setMarkerModalVisible(true);
+  };
+
+  const handleResetStores = async () => {
+    await resetStores();
   };
 
   const searchContainerStyle = {
@@ -203,7 +194,6 @@ const HomeScreen = () => {
               pinColor="#FC5511"
               onPress={() => {
                 const closestStoreFound = findClosestStore();
-                console.log({closestStoreFound});
                 setClosestStore(closestStoreFound);
               }}
             />
@@ -255,7 +245,7 @@ const HomeScreen = () => {
               Dirección: {selectedStore.address.direction}
             </Text>
             <Text style={[styles.text, isDarkTheme && styles.darkText]}>
-              Horario: {selectedStore.schedule.from} -{' '}
+              Horario: {selectedStore.schedule.from} -
               {selectedStore.schedule.end} ({selectedStore.schedule.timezone})
             </Text>
             <FlatList
