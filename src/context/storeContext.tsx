@@ -11,6 +11,8 @@ interface StoreContextType {
   fetchStores: () => Promise<void>;
   resetStores: () => Promise<void>;
   checkin: (storeId: string, taskId: string) => Promise<void>;
+  addFavoriteStore: (storeId: string, storeName: string) => void;
+  favoriteStores: {storeId: string; storeName: string}[];
 }
 
 const StoreContext = createContext<StoreContextType>({
@@ -18,12 +20,31 @@ const StoreContext = createContext<StoreContextType>({
   fetchStores: async () => {},
   resetStores: async () => {},
   checkin: async () => {},
+  addFavoriteStore: () => {},
+  favoriteStores: [],
 });
 
 export const useStores = () => useContext(StoreContext);
 
 export const StoreProvider = ({children}: {children: React.ReactNode}) => {
   const [stores, setStores] = useState<Store[]>([]);
+  const [favoriteStores, setFavoriteStores] = useState<
+    {storeId: string; storeName: string}[]
+  >([]);
+
+  const addFavoriteStore = (storeId: string, storeName: string) => {
+    setFavoriteStores(prevFavorites => {
+      const isAlreadyFavorite = prevFavorites.some(
+        favorite => favorite.storeId === storeId,
+      );
+      if (isAlreadyFavorite) {
+        return prevFavorites.filter(favorite => favorite.storeId !== storeId);
+      } else {
+        const newFavorite = {storeId, storeName};
+        return [...prevFavorites, newFavorite];
+      }
+    });
+  };
 
   const fetchStores = async () => {
     try {
@@ -57,7 +78,15 @@ export const StoreProvider = ({children}: {children: React.ReactNode}) => {
   }, []);
 
   return (
-    <StoreContext.Provider value={{stores, fetchStores, resetStores, checkin}}>
+    <StoreContext.Provider
+      value={{
+        stores,
+        fetchStores,
+        resetStores,
+        checkin,
+        addFavoriteStore,
+        favoriteStores,
+      }}>
       {children}
     </StoreContext.Provider>
   );

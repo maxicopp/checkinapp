@@ -5,8 +5,8 @@ import {PermissionsAndroid, Platform} from 'react-native';
 
 export const useLocationPermission = () => {
   const [userLocation, setUserLocation] = useState({
-    lat: 36.6825,
-    lng: -4.4606,
+    lat: 36.7012,
+    lng: -4.4544,
   });
 
   useEffect(() => {

@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   disabledButton: {
-    backgroundColor: '#CCCCCC',
+    backgroundColor: '#28a745',
   },
 });
 

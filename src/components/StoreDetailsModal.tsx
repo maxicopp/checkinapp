@@ -26,19 +26,20 @@ const StoreDetailsModal: React.FC<StoreDetailsModalProps> = ({
   shippingMethods,
   tasks: initialTasks,
 }) => {
-  const {checkin} = useStores();
+  const {checkin, addFavoriteStore, favoriteStores} = useStores();
   const [isExpanded, setIsExpanded] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
 
   useEffect(() => {
     setTasks(initialTasks);
-  }, [initialTasks]);
+    const isFav = favoriteStores.some(favorite => favorite.storeId === storeId);
+    setIsFavorite(isFav);
+  }, [initialTasks, favoriteStores, storeId]);
 
   const handleCheckin = async (taskId: string) => {
     try {
       await checkin(storeId, taskId);
-      // Actualiza el estado de tasks marcando la tarea como asignada
       setTasks(
         tasks.map(task => {
           if (task.id === taskId) {
@@ -70,7 +71,7 @@ const StoreDetailsModal: React.FC<StoreDetailsModalProps> = ({
               name={isFavorite ? 'heart' : 'heart-o'}
               size={24}
               color="red"
-              onPress={() => setIsFavorite(!isFavorite)}
+              onPress={() => addFavoriteStore(storeId, storeName)}
               style={styles.favoriteIcon}
             />
           </View>

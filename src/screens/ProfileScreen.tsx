@@ -6,34 +6,75 @@ import {
   StyleSheet,
   FlatList,
   SafeAreaView,
+  Platform,
+  useColorScheme,
 } from 'react-native';
+import {useStores} from '../context/storeContext';
+
+const PlaceholderText = () => {
+  const isDarkMode = useColorScheme() === 'dark';
+
+  return (
+    <View
+      style={[
+        styles.placeholderContainer,
+        isDarkMode ? styles.darkPlaceholderContainer : {},
+      ]}>
+      <Text
+        style={[
+          styles.placeholderText,
+          isDarkMode ? styles.darkPlaceholderText : {},
+        ]}>
+        ¿Tienes unas tienda favorita? ¡Marcala con un corazón y asegúrate de que
+        siempre esté a solo un toque de distancia!
+      </Text>
+    </View>
+  );
+};
 
 const ProfileScreen = () => {
-  const favoriteStores = [
-    {id: '1', name: 'Tienda de libros'},
-    {id: '2', name: 'Electrónica Central'},
-    {id: '3', name: 'Moda y Accesorios'},
-  ];
+  const {favoriteStores} = useStores();
+  const isDarkMode = useColorScheme() === 'dark';
 
-  const renderStore = ({item}: {item: {id: string; name: string}}) => (
-    <View style={styles.storeItem}>
-      <Text style={styles.storeText}>{item.name}</Text>
+  const renderStore = ({
+    item,
+  }: {
+    item: {storeId: string; storeName: string};
+  }) => (
+    <View style={[styles.storeItem, isDarkMode ? styles.darkStoreItem : {}]}>
+      <Text style={[styles.storeText, isDarkMode ? styles.darkStoreText : {}]}>
+        {item.storeName}
+      </Text>
     </View>
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[styles.container, isDarkMode ? styles.darkContainer : {}]}>
       <View style={styles.avatarShadow}>
         <Image source={require('../assets/avatar.jpg')} style={styles.avatar} />
       </View>
-      <Text style={styles.name}>John Doe</Text>
-      <Text style={styles.email}>johndoe@example.com</Text>
-      <Text style={styles.favoritesTitle}>Tiendas Favoritas</Text>
+      <Text style={[styles.name, isDarkMode ? styles.darkName : {}]}>
+        John Doe
+      </Text>
+      <Text style={[styles.email, isDarkMode ? styles.darkEmail : {}]}>
+        johndoe@example.com
+      </Text>
+      {favoriteStores.length > 0 && (
+        <Text
+          style={[
+            styles.favoritesTitle,
+            isDarkMode ? styles.darkFavoritesTitle : {},
+          ]}>
+          Favorites Stores
+        </Text>
+      )}
       <FlatList
         data={favoriteStores}
         renderItem={renderStore}
-        keyExtractor={item => item.id}
+        keyExtractor={item => item.storeId}
         style={styles.favoritesList}
+        ListEmptyComponent={PlaceholderText}
       />
     </SafeAreaView>
   );
@@ -45,6 +86,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#f5f5f5',
+    //marginVertical: 50,
   },
   avatarShadow: {
     backgroundColor: 'transparent',
@@ -63,7 +105,8 @@ const styles = StyleSheet.create({
     borderRadius: 75,
   },
   name: {
-    marginTop: 10,
+    marginTop: Platform.OS === 'ios' ? 15 : 10,
+    marginBottom: 5,
     fontSize: 24,
     fontWeight: 'bold',
     color: '#333',
@@ -93,6 +136,53 @@ const styles = StyleSheet.create({
   storeText: {
     fontSize: 16,
     color: '#333',
+  },
+  placeholderContainer: {
+    alignItems: 'center',
+
+    padding: 20,
+    margin: 20,
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    borderRadius: 10,
+  },
+  placeholderText: {
+    fontSize: 16,
+    color: '#666',
+    fontStyle: 'italic',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  darkContainer: {
+    backgroundColor: '#333',
+  },
+  darkPlaceholderContainer: {
+    backgroundColor: '#424242',
+  },
+  darkPlaceholderText: {
+    color: '#ccc',
+  },
+  darkStoreItem: {
+    backgroundColor: '#424242',
+  },
+  darkStoreText: {
+    color: '#fff',
+  },
+  darkName: {
+    color: '#fff',
+  },
+  darkEmail: {
+    color: '#ccc',
+  },
+  darkFavoritesTitle: {
+    color: '#fff',
   },
 });
 
