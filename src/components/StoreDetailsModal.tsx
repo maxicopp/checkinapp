@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {Modal, View, Text, Pressable, StyleSheet, Image} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import Toast from 'react-native-toast-message';
 import {Task} from '../types/types';
 import StoreAdditionalInfo from './StoreAdditionalInfo';
 import {useStores} from '../context/storeContext';
@@ -48,8 +49,19 @@ const StoreDetailsModal: React.FC<StoreDetailsModalProps> = ({
           return task;
         }),
       );
+      console.log('lo hizo');
     } catch (error) {
       console.error('Error during check-in:', error);
+      Toast.show({
+        type: 'error',
+        position: 'top',
+        text1: 'Error during check-in',
+        text2: 'Please try again.',
+        visibilityTime: 4000,
+        autoHide: true,
+        topOffset: 30,
+        bottomOffset: 40,
+      });
     }
   };
 
@@ -104,7 +116,7 @@ const StoreDetailsModal: React.FC<StoreDetailsModalProps> = ({
             onPress={() => setIsExpanded(!isExpanded)}
             style={[styles.button, styles.buttonClose]}>
             <Text style={styles.textStyle}>
-              {isExpanded ? 'Menos' : 'Más'} Info
+              {isExpanded ? 'Less' : 'More'} Info
             </Text>
           </Pressable>
         </View>

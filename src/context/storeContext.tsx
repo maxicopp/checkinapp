@@ -70,6 +70,7 @@ export const StoreProvider = ({children}: {children: React.ReactNode}) => {
       await fetchStores();
     } catch (error) {
       console.error('Error during check-in from context:', error);
+      throw error;
     }
   };
 
