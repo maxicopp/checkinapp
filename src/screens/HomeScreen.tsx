@@ -3,34 +3,27 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {
   View,
-  Text,
   Animated,
   TouchableOpacity,
   StyleSheet,
-  TextInput,
-  FlatList,
-  Dimensions,
   useColorScheme,
   SafeAreaView,
-  Platform,
   Image,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
 import MapView, {Marker, Polyline, UrlTile} from 'react-native-maps';
 import {Store} from '../types/types';
-import FooterComponent from '../components/FooterComponent';
 import {useLocationPermission} from '../hooks/useLocationPermission';
 import markerStore from '../assets/marker-default.png';
 import StoreDetailsModal from '../components/StoreDetailsModal';
 import {useStores} from '../context/storeContext';
-import {resetStores} from '../services/storeService';
-
-const {width} = Dimensions.get('window');
+import {findClosestStore} from '../utils/mapUtils';
+import SearchBar from '../components/SearchBar';
+import StoreTasks from '../components/StoreTasks';
 
 const HomeScreen = () => {
   const {stores, checkin} = useStores();
-  const [selectedStore, setSelectedStore] = useState<Store | null>(null);
+  const selectedStore: Store | null = null;
   const [fadeAnim] = useState(new Animated.Value(0));
   const [searchText, setSearchText] = useState('');
   const [filteredStores, setFilteredStores] = useState<Store[]>([]);
@@ -59,44 +52,6 @@ const HomeScreen = () => {
     setFilteredStores(filtered);
   }, [searchText, stores]);
 
-  const calculateDistance = (
-    lat1: number,
-    lon1: number,
-    lat2: number,
-    lon2: number,
-  ): number => {
-    const R = 6371;
-    const dLat = (lat2 - lat1) * (Math.PI / 180);
-    const dLon = (lon2 - lon1) * (Math.PI / 180);
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(lat1 * (Math.PI / 180)) *
-        Math.cos(lat2 * (Math.PI / 180)) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const distance = R * c;
-    return distance;
-  };
-
-  const findClosestStore = (): Store | null => {
-    let storeFound: Store | null = null;
-    let minDistance = Number.MAX_VALUE;
-    stores.forEach((store: Store) => {
-      const distance = calculateDistance(
-        userLocation.lat,
-        userLocation.lng,
-        parseFloat(store.address.coordinate.lat),
-        parseFloat(store.address.coordinate.lng),
-      );
-      if (distance < minDistance) {
-        storeFound = store;
-        minDistance = distance;
-      }
-    });
-    return storeFound;
-  };
-
   const handleCheckin = async (
     storeId: string,
     taskId: string,
@@ -121,27 +76,6 @@ const HomeScreen = () => {
   const onMarkerPress = (store: Store) => {
     setSelectedMarker(store);
     setMarkerModalVisible(true);
-  };
-
-  const handleResetStores = async () => {
-    await resetStores();
-  };
-
-  const searchContainerStyle = {
-    ...styles.searchContainer,
-    backgroundColor: isDarkTheme
-      ? 'rgba(28, 28, 30, 0.4)'
-      : 'rgba(255, 255, 255, 0.6)',
-  };
-
-  const searchInputStyle = {
-    ...styles.searchInput,
-    color: isDarkTheme ? '#FFFFFF' : '#000000',
-    backgroundColor: isDarkTheme
-      ? 'rgba(28, 28, 30, 0.4)'
-      : 'rgba(255, 255, 255, 0.6)',
-    borderRadius: 20,
-    paddingVertical: Platform.OS === 'ios' ? 10 : 0,
   };
 
   return (
@@ -189,7 +123,10 @@ const HomeScreen = () => {
               }}
               pinColor="#FC5511"
               onPress={() => {
-                const closestStoreFound = findClosestStore();
+                const closestStoreFound = findClosestStore(
+                  stores,
+                  userLocation,
+                );
                 setClosestStore(closestStoreFound);
               }}
             />
@@ -214,61 +151,14 @@ const HomeScreen = () => {
         <FontAwesome6 name="location-crosshairs" size={20} color="#FFFFFF" />
       </TouchableOpacity>
       <SafeAreaView style={styles.overlayContainer}>
-        <View style={searchContainerStyle}>
-          <View style={searchInputStyle}>
-            <FontAwesome6
-              style={styles.locationDot}
-              name="location-dot"
-              size={20}
-              color={isDarkTheme ? '#FFFFFF' : '#000000'}
-            />
-            <TextInput
-              placeholder="Buscar tienda..."
-              placeholderTextColor={isDarkTheme ? '#E1E1E1' : '#8e8e93'}
-              value={searchText}
-              onChangeText={setSearchText}
-              style={{flex: 1, color: isDarkTheme ? '#FFFFFF' : '#000000'}}
-            />
-          </View>
-        </View>
+        <SearchBar
+          searchText={searchText}
+          setSearchText={setSearchText}
+          isDarkTheme={isDarkTheme}
+        />
 
         {selectedStore && (
-          <>
-            <Text style={[styles.header, isDarkTheme && styles.darkText]}>
-              Tareas de la tienda: {selectedStore.name}
-            </Text>
-            <Text style={[styles.text, isDarkTheme && styles.darkText]}>
-              Dirección: {selectedStore.address.direction}
-            </Text>
-            <Text style={[styles.text, isDarkTheme && styles.darkText]}>
-              Horario: {selectedStore.schedule.from} -
-              {selectedStore.schedule.end} ({selectedStore.schedule.timezone})
-            </Text>
-            <FlatList
-              data={selectedStore.tasks}
-              renderItem={({item}) => (
-                <View
-                  style={[styles.taskItem, isDarkTheme && styles.darkTaskItem]}>
-                  <Text style={[styles.text, isDarkTheme && styles.darkText]}>
-                    {item.description}
-                  </Text>
-                  <TouchableOpacity
-                    style={styles.button}
-                    onPress={() => handleCheckin(selectedStore.id, item.id)}>
-                    <Icon name="check-circle" size={20} color="#FFFFFF" />
-                    <Text style={styles.buttonText}>Check-in</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-              keyExtractor={item => item.id.toString()}
-              ListFooterComponent={
-                <FooterComponent
-                  onPress={() => setSelectedStore(null)}
-                  onReset={handleResetStores}
-                />
-              }
-            />
-          </>
+          <StoreTasks handleCheckin={handleCheckin} store={selectedStore} />
         )}
       </SafeAreaView>
       {selectedMarker && (
@@ -320,104 +210,5 @@ const styles = StyleSheet.create({
   },
   darkContainer: {
     backgroundColor: '#121212',
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#2C3E50',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  darkText: {
-    color: '#E1E1E1',
-  },
-  text: {
-    color: '#34495E',
-    marginBottom: 10,
-  },
-  taskItem: {
-    padding: 20,
-    backgroundColor: '#ECF0F1',
-    borderRadius: 8,
-    marginVertical: 10,
-    shadowColor: '#7F8C8D',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 4.65,
-    elevation: 8,
-  },
-  darkTaskItem: {
-    backgroundColor: '#1E1E1E',
-    shadowColor: '#000',
-  },
-  button: {
-    marginTop: 10,
-    backgroundColor: '#00652F',
-    padding: 12,
-    borderRadius: 6,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  centeredView: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 22,
-  },
-  modalView: {
-    margin: 20,
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 35,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  darkModalView: {
-    backgroundColor: '#333',
-  },
-  buttonClose: {
-    backgroundColor: '#2196F3',
-  },
-  textStyle: {
-    color: 'white',
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  modalText: {
-    marginBottom: 15,
-    textAlign: 'center',
-  },
-  searchContainer: {
-    width: width - 40,
-    borderRadius: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'center',
-    zIndex: 2,
-  },
-  searchInput: {
-    flexDirection: 'row',
-    flex: 1,
-    alignItems: 'center',
-    alignSelf: 'center',
-    paddingHorizontal: 10,
-    fontSize: 16,
-  },
-  locationDot: {
-    marginRight: 5,
   },
 });
