@@ -26,9 +26,9 @@ const BottomTabNavigator = () => {
         },
         tabBarLabel: () => null,
       })}>
-      <Tab.Screen name="Menu" component={HomeScreen} />
-      <Tab.Screen name="Resetear Checkin" component={ResetCheckinScreen} />
-      <Tab.Screen name="Perfil" component={ProfileScreen} />
+      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Reset checkin" component={ResetCheckinScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );
 };
