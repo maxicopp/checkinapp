@@ -9,8 +9,6 @@ import {
   StyleSheet,
   TextInput,
   FlatList,
-  Modal,
-  Pressable,
   Dimensions,
   useColorScheme,
   SafeAreaView,
@@ -34,7 +32,6 @@ const HomeScreen = () => {
   const {stores, checkin} = useStores();
   const [selectedStore, setSelectedStore] = useState<Store | null>(null);
   const [fadeAnim] = useState(new Animated.Value(0));
-  const [modalVisible, setModalVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [filteredStores, setFilteredStores] = useState<Store[]>([]);
   const userLocation = useLocationPermission();
@@ -105,7 +102,6 @@ const HomeScreen = () => {
     taskId: string,
   ): Promise<void> => {
     await checkin(storeId, taskId);
-    setModalVisible(true);
   };
 
   const centerMapOnUserLocation = () => {
@@ -275,26 +271,6 @@ const HomeScreen = () => {
           </>
         )}
       </SafeAreaView>
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => {
-          setModalVisible(!modalVisible);
-        }}>
-        <View style={styles.centeredView}>
-          <View style={[styles.modalView, isDarkTheme && styles.darkModalView]}>
-            <Text style={[styles.modalText, isDarkTheme && styles.darkText]}>
-              Check-in realizado con éxito
-            </Text>
-            <Pressable
-              style={[styles.button, styles.buttonClose]}
-              onPress={() => setModalVisible(!modalVisible)}>
-              <Text style={styles.textStyle}>Cerrar</Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
       {selectedMarker && (
         <StoreDetailsModal
           storeDirection={
