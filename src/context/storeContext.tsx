@@ -52,6 +52,7 @@ export const StoreProvider = ({children}: {children: React.ReactNode}) => {
       setStores(fetchedStores);
     } catch (error) {
       console.error('Error fetching stores from context:', error);
+      throw error;
     }
   };
 
@@ -61,6 +62,7 @@ export const StoreProvider = ({children}: {children: React.ReactNode}) => {
       await fetchStores();
     } catch (error) {
       console.error('Error resetting stores from context:', error);
+      throw error;
     }
   };
 
