@@ -1,10 +1,10 @@
 import React from 'react';
 import {useColorScheme} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import HomeScreen from '../screens/HomeScreen';
-import ResetCheckinScreen from '../screens/ResetCheckinScreen';
-import ProfileScreen from '../screens/ProfileScreen';
-import TabBarIcon from '../components/TabBarIcon';
+import HomeScreen from '../screens/HomeScreen/HomeScreen';
+import ResetCheckinScreen from '../screens/ResetCheckinScreen/ResetCheckinScreen';
+import ProfileScreen from '../screens/ProfileScreen/ProfileScreen';
+import TabBarIcon from '../components/TabBarIcon/TabBarIcon';
 
 const Tab = createBottomTabNavigator();
 

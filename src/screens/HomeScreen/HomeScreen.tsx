@@ -1,25 +1,25 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable react-native/no-inline-styles */
 import React, {useEffect, useRef, useState} from 'react';
 import {
   View,
   Animated,
   TouchableOpacity,
-  StyleSheet,
   useColorScheme,
   SafeAreaView,
   Image,
 } from 'react-native';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
 import MapView, {Marker, Polyline, UrlTile} from 'react-native-maps';
-import {Store} from '../types/types';
-import {useLocationPermission} from '../hooks/useLocationPermission';
-import markerStore from '../assets/marker-default.png';
-import StoreDetailsModal from '../components/StoreDetailsModal';
-import {useStores} from '../context/storeContext';
-import {findClosestStore} from '../utils/mapUtils';
-import SearchBar from '../components/SearchBar';
-import StoreTasks from '../components/StoreTasks';
+import {Store} from '../../types/types';
+import {useLocationPermission} from '../../hooks/useLocationPermission';
+import markerStore from '../../assets/marker-default.png';
+import StoreDetailsModal from '../../components/StoreDetailsModal/StoreDetailsModal';
+import {useStores} from '../../context/storeContext';
+import {findClosestStore} from '../../utils/mapUtils';
+import SearchBar from '../../components/SearchBar/SearchBar';
+import StoreTasks from '../../components/StoreTasks/StoreTasks';
+
+import styles from './HomeScreen.styles';
 
 const HomeScreen = () => {
   const {stores, checkin} = useStores();
@@ -140,7 +140,7 @@ const HomeScreen = () => {
                 longitude: parseFloat(store.address.coordinate.lng),
               }}
               onPress={() => onMarkerPress(store)}>
-              <Image source={markerStore} style={{width: 40, height: 40}} />
+              <Image source={markerStore} style={styles.markerStore} />
             </Marker>
           ))}
         </MapView>
@@ -180,35 +180,3 @@ const HomeScreen = () => {
 };
 
 export default HomeScreen;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F7F7F7',
-  },
-  map: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  centerButton: {
-    position: 'absolute',
-    bottom: 20,
-    right: 20,
-    backgroundColor: '#FC5511',
-    padding: 10,
-    borderRadius: 20,
-    zIndex: 4,
-  },
-  overlayContainer: {
-    padding: 20,
-    zIndex: 1,
-    position: 'absolute',
-    width: '100%',
-  },
-  darkContainer: {
-    backgroundColor: '#121212',
-  },
-});

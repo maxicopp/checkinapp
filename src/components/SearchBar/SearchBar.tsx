@@ -1,8 +1,8 @@
 import React from 'react';
-import {View, TextInput, StyleSheet, Dimensions, Platform} from 'react-native';
+import {View, TextInput, Platform} from 'react-native';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
 
-const {width} = Dimensions.get('window');
+import styles from './SearchBar.styles';
 
 interface SearchBarProps {
   searchText: string;
@@ -28,7 +28,12 @@ const SearchBar = ({
     backgroundColor: isDarkTheme
       ? 'rgba(28, 28, 30, 0.6)'
       : 'rgba(255, 255, 255, 0.6)',
-    padding: Platform.OS === 'ios' ? 15 : 0,
+    padding: Platform.OS === 'ios' ? 10 : 0,
+  };
+
+  const textInputStyle = {
+    ...styles.textInput,
+    color: isDarkTheme ? '#FFFFFF' : '#000000',
   };
 
   return (
@@ -41,38 +46,15 @@ const SearchBar = ({
           color={isDarkTheme ? '#FFFFFF' : '#000000'}
         />
         <TextInput
-          placeholder="Buscar tienda..."
+          placeholder="Search store..."
           placeholderTextColor={isDarkTheme ? '#E1E1E1' : '#8e8e93'}
           value={searchText}
           onChangeText={setSearchText}
-          style={{flex: 1, color: isDarkTheme ? '#FFFFFF' : '#000000'}}
+          style={textInputStyle}
         />
       </View>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  searchContainer: {
-    width: width - 40,
-    borderRadius: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'center',
-    zIndex: 2,
-  },
-  searchInput: {
-    flexDirection: 'row',
-    flex: 1,
-    alignItems: 'center',
-    alignSelf: 'center',
-    paddingHorizontal: 10,
-    fontSize: 16,
-    borderRadius: 20,
-  },
-  locationDot: {
-    marginRight: 5,
-  },
-});
 
 export default SearchBar;

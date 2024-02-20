@@ -1,21 +1,8 @@
 import React from 'react';
-import {TouchableOpacity, Text, StyleSheet} from 'react-native';
+import {TouchableOpacity, Text} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
-const styles = StyleSheet.create({
-  button: {
-    marginTop: 10,
-    backgroundColor: '#00652F',
-    padding: 12,
-    borderRadius: 6,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-});
+import styles from './FooterComponent.styles';
 
 const FooterComponent = ({
   onPress,

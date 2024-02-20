@@ -6,11 +6,11 @@ import {
   Animated,
   Alert,
   ImageBackground,
-  StyleSheet,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import {useStores} from '../../context/storeContext';
 
-import {useStores} from '../context/storeContext';
+import styles from './ResetCheckinScreen.styles';
 
 const ResetCheckinScreen = () => {
   const {fetchStores, resetStores} = useStores();
@@ -77,13 +77,13 @@ const ResetCheckinScreen = () => {
 
   return (
     <ImageBackground
-      source={require('../assets/checkin-animals.jpg')}
+      source={require('../../assets/checkin-animals.jpg')}
       style={styles.flexContainer}>
       <View style={styles.flexContainer}>
         <Text style={styles.infoText}>
           {resetSuccessful
-            ? 'Check-ins reseteados con éxito!'
-            : 'Para resetear check-ins mantenga presionado'}
+            ? 'Check-ins successfully reset!'
+            : 'To reset check-ins keep pressed'}
         </Text>
         <TouchableOpacity
           onPressIn={handlePressIn}
@@ -108,38 +108,5 @@ const ResetCheckinScreen = () => {
     </ImageBackground>
   );
 };
-
-const styles = StyleSheet.create({
-  flexContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  infoText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-    paddingHorizontal: 20,
-    textAlign: 'center',
-    marginBottom: 30,
-  },
-  centeredContent: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  animatedButton: {
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  timerText: {
-    color: 'white',
-    textAlign: 'center',
-    fontSize: 60,
-    fontWeight: 'bold',
-  },
-});
 
 export default ResetCheckinScreen;
