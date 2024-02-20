@@ -26,7 +26,7 @@ const PlaceholderText = () => {
           isDarkMode ? styles.darkPlaceholderText : {},
         ]}>
         ¿Tienes unas tienda favorita? ¡Marcala con un corazón y asegúrate de que
-        siempre esté a solo un toque de distancia!
+        siempre esté a solo un click de distancia!
       </Text>
     </View>
   );

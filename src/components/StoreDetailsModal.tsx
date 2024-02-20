@@ -66,7 +66,18 @@ const StoreDetailsModal: React.FC<StoreDetailsModalProps> = ({
         onPress={() => setModalVisible(false)}>
         <View style={styles.modalView} onStartShouldSetResponder={() => true}>
           <View style={styles.header}>
-            <Image source={require('../assets/logo.png')} style={styles.logo} />
+            {!isExpanded && (
+              <Image
+                source={require('../assets/logo.png')}
+                style={styles.logo}
+              />
+            )}
+            {isExpanded && (
+              <Image
+                source={require('../assets/banner.jpg')}
+                style={styles.banner}
+              />
+            )}
             <Icon
               name={isFavorite ? 'heart' : 'heart-o'}
               size={24}
@@ -116,6 +127,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     width: '100%',
     marginBottom: 30,
+  },
+  banner: {
+    width: '100%',
+    height: 150,
+    flex: 1,
+    borderRadius: 5,
+    margin: -35,
   },
   favoriteIcon: {
     position: 'absolute',
