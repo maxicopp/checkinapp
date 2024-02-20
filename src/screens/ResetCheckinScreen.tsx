@@ -18,7 +18,7 @@ const ResetCheckinScreen = () => {
   const [resetSuccessful, setResetSuccessful] = useState(false);
   const [buttonColor, setButtonColor] = useState('#FC5511');
   const [iconName, setIconName] = useState('restart');
-  const [timer, setTimer] = useState(3);
+  const [timer, setTimer] = useState(4);
   const pressTimer = useRef<NodeJS.Timeout>();
   const countdownTimer = useRef<NodeJS.Timeout>();
 
@@ -26,7 +26,7 @@ const ResetCheckinScreen = () => {
     setResetSuccessful(false);
     setButtonColor('#FC5511');
     setIconName('restart');
-    setTimer(3);
+    setTimer(4);
     Animated.spring(animation, {
       toValue: 0.5,
       friction: 3,
@@ -47,13 +47,13 @@ const ResetCheckinScreen = () => {
       } catch (error) {
         Alert.alert('Error al resetear tiendas');
       }
-    }, 3000);
+    }, 4000);
   };
 
   const handlePressOut = () => {
     clearInterval(countdownTimer.current);
     clearTimeout(pressTimer.current);
-    setTimer(3.5);
+    setTimer(4);
     Animated.spring(animation, {
       toValue: 1,
       friction: 3,
@@ -97,7 +97,7 @@ const ResetCheckinScreen = () => {
             ]}>
             {resetSuccessful ? (
               <Icon name="check-circle-outline" size={100} color="white" />
-            ) : timer < 3 ? (
+            ) : timer < 4 ? (
               <Text style={styles.timerText}>{timer}</Text>
             ) : (
               <Icon name={iconName} size={100} color="white" />
