@@ -9,6 +9,7 @@ interface StoreAdditionalInfoProps {
   shippingMethods: ShippingMethod[];
   tasks: Task[];
   onCheckin: (taskId: string) => void;
+  loadingCheckin: boolean;
 }
 
 const StoreAdditionalInfo: React.FC<StoreAdditionalInfoProps> = ({
@@ -16,6 +17,7 @@ const StoreAdditionalInfo: React.FC<StoreAdditionalInfoProps> = ({
   shippingMethods,
   tasks,
   onCheckin,
+  loadingCheckin,
 }) => {
   return (
     <View style={styles.additionalInfoContainer}>
@@ -44,7 +46,7 @@ const StoreAdditionalInfo: React.FC<StoreAdditionalInfoProps> = ({
             <TouchableOpacity
               style={[styles.checkinButton, assigned && styles.disabledButton]}
               onPress={() => onCheckin(id)}
-              disabled={assigned}>
+              disabled={assigned || loadingCheckin}>
               <Text style={styles.checkinButtonText}>Check-in</Text>
             </TouchableOpacity>
           </View>

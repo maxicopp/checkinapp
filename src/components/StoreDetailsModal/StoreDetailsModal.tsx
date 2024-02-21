@@ -33,6 +33,7 @@ const StoreDetailsModal: React.FC<StoreDetailsModalProps> = ({
   const [isExpanded, setIsExpanded] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
+  const [loadingCheckin, setLoadingCheckin] = useState(false);
 
   useEffect(() => {
     setTasks(initialTasks);
@@ -41,6 +42,7 @@ const StoreDetailsModal: React.FC<StoreDetailsModalProps> = ({
   }, [initialTasks, favoriteStores, storeId]);
 
   const handleCheckin = async (taskId: string) => {
+    setLoadingCheckin(true);
     try {
       await checkin(storeId, taskId);
       setTasks(
@@ -64,6 +66,7 @@ const StoreDetailsModal: React.FC<StoreDetailsModalProps> = ({
         bottomOffset: 40,
       });
     }
+    setLoadingCheckin(false);
   };
 
   return (
@@ -111,6 +114,7 @@ const StoreDetailsModal: React.FC<StoreDetailsModalProps> = ({
               shippingMethods={shippingMethods}
               tasks={tasks}
               onCheckin={handleCheckin}
+              loadingCheckin={loadingCheckin}
             />
           )}
           <Pressable

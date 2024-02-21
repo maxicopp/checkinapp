@@ -2,6 +2,13 @@ import React from 'react';
 import {render, fireEvent} from '@testing-library/react-native';
 import StoreDetailsModal from './StoreDetailsModal';
 
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  setItem: jest.fn(),
+  getItem: jest.fn(),
+  removeItem: jest.fn(),
+  clear: jest.fn(),
+}));
+
 describe('StoreDetailsModal', () => {
   it('renders correctly with modalVisible prop', () => {
     const {getByText} = render(
