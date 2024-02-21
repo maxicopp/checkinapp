@@ -5,6 +5,7 @@ import {
   resetStores as resetStoresService,
   checkin as checkinService,
 } from '../services/storeService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface StoreContextType {
   stores: Store[];
@@ -32,17 +33,33 @@ export const StoreProvider = ({children}: {children: React.ReactNode}) => {
     {storeId: string; storeName: string}[]
   >([]);
 
-  const addFavoriteStore = (storeId: string, storeName: string) => {
+  useEffect(() => {
+    const loadFavoriteStores = async () => {
+      const storedFavorites = await AsyncStorage.getItem('favoriteStores');
+      if (storedFavorites) {
+        setFavoriteStores(JSON.parse(storedFavorites));
+      }
+    };
+
+    loadFavoriteStores();
+  }, []);
+
+  const addFavoriteStore = async (storeId: string, storeName: string) => {
     setFavoriteStores(prevFavorites => {
       const isAlreadyFavorite = prevFavorites.some(
         favorite => favorite.storeId === storeId,
       );
+      let updatedFavorites;
       if (isAlreadyFavorite) {
-        return prevFavorites.filter(favorite => favorite.storeId !== storeId);
+        updatedFavorites = prevFavorites.filter(
+          favorite => favorite.storeId !== storeId,
+        );
       } else {
         const newFavorite = {storeId, storeName};
-        return [...prevFavorites, newFavorite];
+        updatedFavorites = [...prevFavorites, newFavorite];
       }
+      AsyncStorage.setItem('favoriteStores', JSON.stringify(updatedFavorites));
+      return updatedFavorites;
     });
   };
 
