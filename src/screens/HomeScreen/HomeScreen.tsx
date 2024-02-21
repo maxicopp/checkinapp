@@ -20,6 +20,7 @@ import SearchBar from '../../components/SearchBar/SearchBar';
 import StoreTasks from '../../components/StoreTasks/StoreTasks';
 
 import styles from './HomeScreen.styles';
+import ClosestStoreModal from '../../components/ClosestStoreModal/ClosestStoreModal';
 
 const HomeScreen = () => {
   const {stores, checkin} = useStores();
@@ -32,6 +33,8 @@ const HomeScreen = () => {
   const [markerModalVisible, setMarkerModalVisible] = useState(false);
   const [selectedMarker, setSelectedMarker] = useState<Store | null>(null);
   const [closestStore, setClosestStore] = useState<Store | null>(null);
+  const [closestStoreModalVisible, setClosestStoreModalVisible] =
+    useState(false);
 
   const scheme = useColorScheme();
   const isDarkTheme = scheme === 'dark';
@@ -128,6 +131,7 @@ const HomeScreen = () => {
                   userLocation,
                 );
                 setClosestStore(closestStoreFound);
+                setClosestStoreModalVisible(true);
               }}
             />
           )}
@@ -175,6 +179,11 @@ const HomeScreen = () => {
           tasks={selectedMarker?.tasks}
         />
       )}
+      <ClosestStoreModal
+        modalVisible={closestStoreModalVisible}
+        setModalVisible={setClosestStoreModalVisible}
+        store={closestStore}
+      />
     </Animated.View>
   );
 };
