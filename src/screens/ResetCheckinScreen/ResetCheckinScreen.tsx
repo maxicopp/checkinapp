@@ -4,10 +4,10 @@ import {
   Text,
   TouchableOpacity,
   Animated,
-  Alert,
   ImageBackground,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import Toast from 'react-native-toast-message';
 import {useStores} from '../../context/storeContext';
 
 import styles from './ResetCheckinScreen.styles';
@@ -45,7 +45,12 @@ const ResetCheckinScreen = () => {
 
         fetchStores();
       } catch (error) {
-        Alert.alert('Error al resetear tiendas');
+        Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: 'Error resetting stores.',
+          visibilityTime: 4000,
+        });
       }
     }, 4000);
   };

@@ -9,7 +9,7 @@ import {
   Image,
 } from 'react-native';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
-import MapView, {Marker, Polyline, UrlTile} from 'react-native-maps';
+import MapView, {Marker, UrlTile} from 'react-native-maps';
 import {Store} from '../../types/types';
 import {useLocationPermission} from '../../hooks/useLocationPermission';
 import markerStore from '../../assets/marker-default.png';
@@ -18,9 +18,9 @@ import {useStores} from '../../context/storeContext';
 import {findClosestStore} from '../../utils/mapUtils';
 import SearchBar from '../../components/SearchBar/SearchBar';
 import StoreTasks from '../../components/StoreTasks/StoreTasks';
+import ClosestStoreModal from '../../components/ClosestStoreModal/ClosestStoreModal';
 
 import styles from './HomeScreen.styles';
-import ClosestStoreModal from '../../components/ClosestStoreModal/ClosestStoreModal';
 
 const HomeScreen = () => {
   const {stores, checkin} = useStores();
@@ -53,6 +53,19 @@ const HomeScreen = () => {
       store.name.toLowerCase().includes(searchText.toLowerCase()),
     );
     setFilteredStores(filtered);
+
+    if (filtered.length > 0) {
+      const firstStore = filtered[0];
+      mapRef.current?.animateToRegion(
+        {
+          latitude: parseFloat(firstStore.address.coordinate.lat),
+          longitude: parseFloat(firstStore.address.coordinate.lng),
+          latitudeDelta: 0.0922,
+          longitudeDelta: 0.0421,
+        },
+        1000,
+      );
+    }
   }, [searchText, stores]);
 
   const handleCheckin = async (
@@ -103,19 +116,6 @@ const HomeScreen = () => {
             tileSize={256}
             maximumZ={19}
           />
-          {userLocation && closestStore && (
-            <Polyline
-              coordinates={[
-                {latitude: userLocation.lat, longitude: userLocation.lng},
-                {
-                  latitude: parseFloat(closestStore.address.coordinate.lat),
-                  longitude: parseFloat(closestStore.address.coordinate.lng),
-                },
-              ]}
-              strokeColor="#00652F"
-              strokeWidth={4}
-            />
-          )}
           {userLocation && (
             <Marker
               tracksViewChanges={false}

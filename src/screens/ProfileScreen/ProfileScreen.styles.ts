@@ -6,6 +6,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#f5f5f5',
+    marginVertical: 20,
   },
   avatarShadow: {
     backgroundColor: 'transparent',
